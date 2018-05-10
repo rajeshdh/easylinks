@@ -5,7 +5,7 @@ module.exports = (app) => {
     app.post('/link', links.create);
     
     // Retrieve all links
-    app.get('/links', links.findAll);
+    app.get('/link', links.findAll);
 
     // Retrieve a single link with link id
     app.get('/link/:linkId', links.findOne);

@@ -2,10 +2,13 @@ import React, { Component } from "react";
 import logo from "./logo.svg";
 import "bootstrap/dist/css/bootstrap.css";
 import "./App.css";
+import API from "./apiService";
 
 import ListItem from "./components/ListItem";
 import CreateLink from "./components/CreateLink";
 
+const myApi = new API({ url: "http://localhost:3001" });
+myApi.createEntity({ name: "link" });
 class App extends Component {
   constructor(props) {
     super(props);
@@ -19,98 +22,42 @@ class App extends Component {
     updateItem: null
   };
   componentDidMount() {
-    this.callApi()
+    // console.log(myApi.endpoints);
+    myApi.endpoints.link
+      .getAll()
       .then(links => {
         this.setState({ links });
       })
       .catch(err => console.log(err));
   }
   removeItem(itemIndex) {
-    this.removeApi(itemIndex).then(msg => {
+    myApi.endpoints.link.delete({ id: itemIndex }).then(msg => {
       // TODO: Do something with the msg
-      // let array = [...this.state.links]; // make a separate copy of the array
       let newState = this.state.links.filter(link => link._id !== itemIndex);
       this.setState({ links: newState });
     });
   }
-  removeApi = async itemIndex => {
-    const response = await fetch("/link/" + itemIndex, {
-      method: "DELETE"
-    });
-    const body = await response.json();
-    return body;
-  };
+
   loadEditLink(item) {
     this.setState({ updateItem: item });
   }
   editLink(link) {
     // console.log(link);
-    this.editLinkApi(link).then(data => {
+    myApi.endpoints.link.update(link).then(data => {
       this.setState({ updateItem: null });
-      let array = [...this.state.links];
-      var foundIndex = array.findIndex(x => x._id === data._id);
-      array[foundIndex] = data;
-      this.setState({links: array});
+      let newState = this.state.links.map(function(link) {
+        return link._id === data._id ? data : link;
+      });
+      this.setState({ links: newState });
     });
   }
-  editLinkApi = async link => {
-    const response = await fetch("/link/" + link._id, {
-      method: "PUT",
-      body: JSON.stringify(link),
-      headers: new Headers({
-        "Content-Type": "application/json"
-      })
-    });
-    const body = await response.json();
-    return body;
-  };
   addLink(newLink) {
-    this.addLinkApi(newLink).then(data => {
-      // console.log(data);
-      let array = [...this.state.links];
-      array.push(data);
+    myApi.endpoints.link.create(newLink).then(data => {
+      let array = [...this.state.links].concat(data);
       this.setState({ links: array });
     });
   }
-  addLinkApi = async newLink => {
-    const response = await fetch("/link", {
-      method: "POST",
-      body: JSON.stringify(newLink),
-      headers: new Headers({
-        "Content-Type": "application/json"
-      })
-    });
-    const body = await response.json();
-    return body;
-  };
-  callApi = async () => {
-    const response = await fetch("/links");
-    const body = await response.json();
-    // console.log(body);
-    if (response.status !== 200) throw Error(body.message);
-    return body;
-  };
   render() {
-    var items = this.state.links.map((item, index) => {
-      return (
-        <ListItem
-          key={index}
-          item={item}
-          index={item._id}
-          removeItem={this.removeItem}
-          loadEditLink={this.loadEditLink}
-        />
-      );
-    });
-    var tableHeader = (
-      <tr>
-        <th>Title</th>
-        <th>URL</th>
-        <th>Category</th>
-        <th>Rate</th>
-        <th />
-      </tr>
-    );
     return (
       <div className="App">
         <header className="App-header">
@@ -124,8 +71,28 @@ class App extends Component {
             <CreateLink addLink={this.addLink} />
           )}
           <table className="table table-striped table-hover">
-            <thead>{tableHeader}</thead>
-            <tbody>{items}</tbody>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>URL</th>
+                <th>Category</th>
+                <th>Rate</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {this.state.links.map((item, index) => {
+                return (
+                  <ListItem
+                    key={index}
+                    item={item}
+                    index={item._id}
+                    removeItem={this.removeItem}
+                    loadEditLink={this.loadEditLink}
+                  />
+                );
+              })}
+            </tbody>
           </table>
         </div>
       </div>

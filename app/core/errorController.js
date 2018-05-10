@@ -2,11 +2,11 @@
 /**
  * Get unique error field name
  */
-var getUniqueErrorMessage = function (err) {
-    var output;
+let getUniqueErrorMessage = function (err) {
+    let output;
 
     try {
-        var begin = 0;
+        let begin = 0;
         if (err.errmsg.lastIndexOf('.$') !== -1) {
             // support mongodb <= 3.0 (default: MMapv1 engine)
             // "errmsg" : "E11000 duplicate key error index: mean-dev.users.$email_1 dup key: { : \"test@user.com\" }"
@@ -16,7 +16,7 @@ var getUniqueErrorMessage = function (err) {
             // "errmsg" : "E11000 duplicate key error collection: mean-dev.users index: email_1 dup key: { : \"test@user.com\" }"
             begin = err.errmsg.lastIndexOf('index: ') + 7;
         }
-        var fieldName = err.errmsg.substring(begin, err.errmsg.lastIndexOf('_1'));
+        let fieldName = err.errmsg.substring(begin, err.errmsg.lastIndexOf('_1'));
         output = fieldName.charAt(0).toUpperCase() + fieldName.slice(1) + ' already exists';
 
     } catch (ex) {
@@ -30,7 +30,7 @@ var getUniqueErrorMessage = function (err) {
  * Get the error message from error object
  */
 exports.getErrorMessage = function (err) {
-    var message = '';
+    let message = '';
 
     if (err.code) {
         switch (err.code) {
@@ -53,7 +53,7 @@ exports.getErrorMessage = function (err) {
     } else if (err.message && !err.errors) {
         message = err.message;
     } else {
-        for (var errName in err.errors) {
+        for (let errName in err.errors) {
             if (err.errors[errName].message) {
                 message = err.errors[errName].message;
             }

@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 
-var env = process.env.NODE_ENV || 'dev';
+let env = process.env.NODE_ENV || 'dev';
 const config = require('./config/' + env + '.config');
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
@@ -34,7 +34,13 @@ mongoose.connect(config.url)
 //         "message": "Welcome to link api. Organise and keep track of all your links."
 //     });
 // });
-
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE");
+    next();
+  });
+  
 require('./app/routes/link.routes.js')(app);
 // listen for requests 
 app.listen(3001, () => {
